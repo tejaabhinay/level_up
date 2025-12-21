@@ -67,12 +67,13 @@ function InteractiveBackground() {
         repulsionStrength: 1.6,
       },
 
-      color: {
-        baseHue: 260,
-        hueSpeed: 0.55,
-        saturation: 90,
-        lightness: 65,
-      },
+color: {
+  baseHue: 220,        // blue-violet space
+  hueSpeed: 0.15,      // slow cosmic shift
+  saturation: 80,
+  lightness: 70,
+},
+
 
       trails: {
         permanentLength: 7,
@@ -120,9 +121,10 @@ function InteractiveBackground() {
         this.vx = rand(-1, 1) * (permanent ? 1.4 : 8);
         this.vy = rand(-1, 1) * (permanent ? 1.4 : 8);
 
-        this.baseR =
-          rand(0, CONFIG.particles.radiusVariance) +
-          CONFIG.particles.baseRadius;
+this.baseR =
+  rand(0, CONFIG.particles.radiusVariance * 0.6) +
+  CONFIG.particles.baseRadius * 0.6;
+
         this.r = this.baseR;
 
         this.pulse = rand(0, Math.PI * 2);
@@ -270,7 +272,8 @@ function InteractiveBackground() {
       draw() {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-        ctx.strokeStyle = `hsla(${globalHue},100%,80%,${this.a})`;
+ctx.strokeStyle = `hsla(${globalHue},70%,75%,${this.life * 0.15})`;
+
         ctx.lineWidth = CONFIG.ripples.lineWidth;
         ctx.stroke();
       }
@@ -289,8 +292,28 @@ function InteractiveBackground() {
       engine.current.frame++;
       engine.current.time += 0.01;
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.globalCompositeOperation = "screen";
+ ctx.globalCompositeOperation = "source-over";
+
+/* 🌌 Space background (nebula fog) */
+const bg = ctx.createRadialGradient(
+  canvas.width * 0.5,
+  canvas.height * 0.4,
+  0,
+  canvas.width * 0.5,
+  canvas.height * 0.4,
+  Math.max(canvas.width, canvas.height)
+);
+
+bg.addColorStop(0, "rgba(40, 20, 80, 0.35)");
+bg.addColorStop(0.4, "rgba(10, 15, 40, 0.35)");
+bg.addColorStop(1, "rgba(0, 0, 0, 0.85)");
+
+ctx.fillStyle = bg;
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+/* switch to additive glow */
+ctx.globalCompositeOperation = "screen";
+
 
       globalHue += CONFIG.color.hueSpeed;
 

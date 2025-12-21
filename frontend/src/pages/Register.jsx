@@ -6,6 +6,7 @@ import TextInput from "../components/TextInput.jsx";
 import InteractiveBackground from "../components/InteractiveBackground";
 import ComplimentPopup from "../components/ComplimentPopup";
 import SkillCinematic from "../components/SkillCinematic";
+import DnaBackground from "../components/DnaBackground";
 
 
 
@@ -115,6 +116,7 @@ const availableSkills =
   SKILLS_BY_AVAILABILITY[availability] || [];
 
 return (
+  
   <>
     <ComplimentPopup
       message={complimentText}
@@ -123,6 +125,7 @@ return (
 <SkillCinematic effect={cinematic} trigger={cinematic !== null} />
 
     <InteractiveBackground />
+ <DnaBackground />
 
     <div
       style={{
@@ -130,11 +133,13 @@ return (
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        background: `
-          radial-gradient(circle at 20% 20%, rgba(99,102,241,0.15), transparent 40%),
-          radial-gradient(circle at 80% 80%, rgba(168,85,247,0.15), transparent 40%),
-          linear-gradient(135deg, #020617, #020617)
-        `,
+     background: `
+  radial-gradient(circle at 30% 20%, rgba(88, 101, 242, 0.18), transparent 40%),
+  radial-gradient(circle at 70% 80%, rgba(168, 85, 247, 0.18), transparent 45%),
+  radial-gradient(circle at 50% 50%, rgba(34, 211, 238, 0.12), transparent 50%),
+  linear-gradient(180deg, #020617 0%, #000000 100%)
+`,
+
         overflow: "hidden",
       }}
     >
