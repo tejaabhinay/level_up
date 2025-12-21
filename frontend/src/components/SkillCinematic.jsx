@@ -180,6 +180,95 @@ function drawFrontendWave() {
       vx: (Math.random() - 0.5) * 0.4,
       vy: (Math.random() - 0.5) * 0.4,
     }));
+function drawLiteratureReview() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "rgba(2,6,23,0.9)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  for (let i = 0; i < 8; i++) {
+    ctx.fillStyle = "rgba(129,140,248,0.6)";
+    ctx.fillRect(
+      canvas.width / 2 - 120 + i * 4,
+      canvas.height / 2 - 60 + i * 6,
+      240,
+      40
+    );
+  }
+}
+let scanY = 0;
+function drawPaperReading() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "rgba(2,6,23,0.9)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.strokeStyle = "rgba(129,140,248,0.7)";
+  ctx.lineWidth = 2;
+
+  for (let i = 0; i < 10; i++) {
+    ctx.beginPath();
+    ctx.moveTo(200, scanY + i * 40);
+    ctx.lineTo(canvas.width - 200, scanY + i * 40);
+    ctx.stroke();
+  }
+
+  scanY += 6;
+}
+function drawDataAnalysis() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "rgba(2,6,23,0.9)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  for (let i = 0; i < 12; i++) {
+    const h = Math.random() * 200 + 40;
+    ctx.fillStyle = "rgba(52,211,153,0.7)";
+    ctx.fillRect(200 + i * 50, canvas.height - h - 200, 30, h);
+  }
+}
+function drawStatistics() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "rgba(2,6,23,0.9)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.strokeStyle = "#38bdf8";
+  ctx.beginPath();
+  for (let x = 0; x < canvas.width; x += 20) {
+    const y =
+      canvas.height / 2 +
+      Math.sin(x * 0.01) * 120;
+    ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+}
+let cursorX = 200;
+function drawScientificWriting() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "rgba(2,6,23,0.9)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "#e0e7ff";
+  ctx.font = "20px monospace";
+  ctx.fillText("Writing paper...", 200, 300);
+
+  ctx.fillRect(cursorX, 320, 10, 24);
+  cursorX += 4;
+}
+function drawLogicalReasoning() {
+  drawBackendNetwork(); // reuse
+}
+function drawQuickThinking() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "rgba(99,102,241,0.35)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+let waveR = 0;
+function drawCommunication() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = "rgba(168,85,247,0.7)";
+  ctx.beginPath();
+  ctx.arc(canvas.width/2, canvas.height/2, waveR, 0, Math.PI * 2);
+  ctx.stroke();
+  waveR += 10;
+}
 
     function drawBackendNetwork() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -231,6 +320,14 @@ if (effect === "management") drawManagementBlocks();
 if (effect === "frontend") drawFrontendWave();
 if (effect === "design") drawDesignCurves();
 if (effect === "presentation") drawPresentationSpotlight();
+if (effect === "literature review") drawLiteratureReview();
+if (effect === "paper reading") drawPaperReading();
+if (effect === "data analysis") drawDataAnalysis();
+if (effect === "statistical methods") drawStatistics();
+if (effect === "scientific writing") drawScientificWriting();
+if (effect === "logical reasoning") drawLogicalReasoning();
+if (effect === "quick thinking") drawQuickThinking();
+if (effect === "communication") drawCommunication();
 
       if (elapsed < 1000) {
         requestAnimationFrame(animate);

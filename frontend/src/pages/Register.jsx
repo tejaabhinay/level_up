@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SkillSelector from "../components/SkillSelector";
 import AvailabilitySelect from "../components/AvailabilitySelect.jsx";
 import TextInput from "../components/TextInput.jsx";
@@ -9,15 +9,41 @@ import SkillCinematic from "../components/SkillCinematic";
 
 
 
-const SKILLS = [
-  "frontend",
-  "backend",
-  "database",
-  "management",
-  "presentation",
-  "design",
-  "ml"
-];
+const SKILLS_BY_AVAILABILITY = {
+  hackathon: [
+    "frontend",
+    "backend",
+    "database",
+    "ml",
+    "design",
+    "management",
+    "presentation",
+  ],
+  project: [
+    "frontend",
+    "backend",
+    "database",
+    "ml",
+    "design",
+    "management",
+  ],
+  research: [
+    "literature review",
+    "paper reading",
+    "data analysis",
+    "statistical methods",
+    "critical thinking",
+    "experiment design",
+    "scientific writing",
+    "domain knowledge",
+  ],
+  quiz: [
+    "logical reasoning",
+    "concept clarity",
+    "quick thinking",
+    "communication",
+  ],
+};
 
 function Register() {
 const [cinematic, setCinematic] = useState(null);
@@ -28,6 +54,10 @@ const [complimentText, setComplimentText] = useState("");
   const [skills, setSkills] = useState([]);
   const [lookingFor, setLookingFor] = useState("");
   const [availability, setAvailability] = useState("hackathon");
+useEffect(() => {
+  setSkills([]);        // clear previous skills
+  setCinematic(null);  // stop any running effect
+}, [availability]);
 
 const toggleSkill = (skill) => {
   setSkills((prev) => {
@@ -35,25 +65,19 @@ const toggleSkill = (skill) => {
       ? prev.filter((s) => s !== skill)
       : [...prev, skill];
 
-if (!prev.includes(skill)) {
-  if (skill === "ml") setCinematic("ml");
-  if (skill === "database") setCinematic("database");
-  if (skill === "backend") setCinematic("backend");
-  if (skill === "management") setCinematic("management");
-  if (skill === "frontend") setCinematic("frontend");
+    // trigger cinematic only on first select
+    if (!prev.includes(skill)) {
+      setCinematic(skill);
 
-if (skill === "design") setCinematic("design");
-if (skill === "presentation") setCinematic("presentation");
-
-  setTimeout(() => setCinematic(null), 1200);
-}
-
-
-
+      setTimeout(() => {
+        setCinematic(null);
+      }, 1200);
+    }
 
     return updated;
   });
 };
+
 
 const compliments = [
   "Great to have you here,",
@@ -87,6 +111,8 @@ const triggerCompliment = (enteredName) => {
       availability
     });
   };
+const availableSkills =
+  SKILLS_BY_AVAILABILITY[availability] || [];
 
 return (
   <>
@@ -167,11 +193,12 @@ return (
             onChange={setEmail}
           />
 
-          <SkillSelector
-            skills={SKILLS}
-            selectedSkills={skills}
-            onToggle={toggleSkill}
-          />
+         <SkillSelector
+  skills={availableSkills}
+  selectedSkills={skills}
+  onToggle={toggleSkill}
+/>
+
 
           <div style={{ marginTop: "10px" }}>
             <h4>Looking for</h4>

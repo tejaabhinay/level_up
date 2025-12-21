@@ -1,0 +1,136 @@
+/* Base pill */
+.skill-pill {
+  position: relative;
+  overflow: hidden;
+  will-change: transform, opacity;
+}
+
+/* =========================
+   RESEARCH — CALM MOTIONS
+========================= */
+
+/* literature review → gentle stack */
+.skill-pill.stack {
+  transform: translateY(2px);
+}
+
+/* paper reading → underline sweep */
+.skill-pill.underline::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  bottom: 4px;
+  width: 80%;
+  height: 1px;
+  background: rgba(129, 140, 248, 0.8);
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: underlineSweep 0.4s ease forwards;
+}
+
+@keyframes underlineSweep {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* data analysis → bars rising */
+.skill-pill.bars::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(129, 140, 248, 0.25) 30%,
+    transparent 30%
+  );
+  animation: barsRise 0.35s ease forwards;
+}
+
+@keyframes barsRise {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* statistical methods → subtle curve spacing */
+.skill-pill.curve {
+  letter-spacing: 1px;
+}
+
+/* critical thinking → expand & settle */
+.skill-pill.branch {
+  transform: scale(1.05);
+}
+
+/* experiment design → flow alignment */
+.skill-pill.flow {
+  transform: translateX(4px);
+}
+
+/* scientific writing → blinking cursor */
+.skill-pill.cursor::after {
+  content: "|";
+  margin-left: 4px;
+  animation: cursorBlink 0.9s steps(1) infinite;
+}
+
+@keyframes cursorBlink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* domain knowledge → halo pulse */
+.skill-pill.halo {
+  box-shadow: 0 0 14px rgba(129, 140, 248, 0.45);
+}
+
+/* =========================
+   QUIZ — FAST MOTIONS
+========================= */
+
+/* logical reasoning → snap */
+.skill-pill.snap {
+  transform: scale(1.08);
+}
+
+/* concept clarity → focus sharpen */
+.skill-pill.focus {
+  filter: blur(0);
+}
+
+/* quick thinking → pulse */
+.skill-pill.pulse {
+  animation: quickPulse 0.15s ease;
+}
+
+@keyframes quickPulse {
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* communication → ripple */
+.skill-pill.ripple::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(129, 140, 248, 0.6);
+  animation: rippleOut 0.3s ease forwards;
+}
+
+@keyframes rippleOut {
+  from {
+    transform: scale(0.6);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
