@@ -7,6 +7,8 @@ import InteractiveBackground from "../components/InteractiveBackground";
 import ComplimentPopup from "../components/ComplimentPopup";
 import SkillCinematic from "../components/SkillCinematic";
 import DnaBackground from "../components/DnaBackground";
+import api from "../api";
+import { useNavigate } from "react-router-dom";
 
 
 
@@ -47,6 +49,7 @@ const SKILLS_BY_AVAILABILITY = {
 };
 
 function Register() {
+const navigate = useNavigate();
 const [cinematic, setCinematic] = useState(null);
 const [showCompliment, setShowCompliment] = useState(false);
 const [complimentText, setComplimentText] = useState("");
@@ -102,16 +105,30 @@ const triggerCompliment = (enteredName) => {
   }, 2500);
 };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log({
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    const res = await api.post("/users/register", {
       name,
       email,
       skills,
-      lookingFor,
-      availability
+      lookingFor: lookingFor
+        .split(",")
+        .map((s) => s.trim()),
+      portfolio: {}, // you can extend later
     });
-  };
+
+    // Save logged-in user (temporary auth)
+    localStorage.setItem("user", JSON.stringify(res.data));
+
+    // Redirect to matches page
+    navigate("/matches");
+  } catch (err) {
+    alert(err.response?.data?.message || "Registration failed");
+  }
+};
+
 const availableSkills =
   SKILLS_BY_AVAILABILITY[availability] || [];
 
