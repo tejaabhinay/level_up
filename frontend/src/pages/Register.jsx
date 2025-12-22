@@ -122,20 +122,19 @@ if (!github || !linkedin) {
 }
 
   try {
-    const res = await api.post("/users/register", {
-      name,
-      email,
-      skills,
-      lookingFor: lookingFor
-        .split(",")
-        .map((s) => s.trim()),
-     portfolio: {
-  github,
-  linkedin,
-  codingProfile: codingProfile || undefined,
-},
-// you can extend later
-    });
+   const res = await api.post("/users/register", {
+  name,
+  email,
+  availability, // ✅ ADD THIS LINE
+  skills,
+  lookingFor: lookingFor.split(",").map((s) => s.trim()),
+  portfolio: {
+    github,
+    linkedin,
+    codingProfile: codingProfile || undefined,
+  },
+});
+
 
     // Save logged-in user (temporary auth)
     localStorage.setItem("user", JSON.stringify(res.data));
