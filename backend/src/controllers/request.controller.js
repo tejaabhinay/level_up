@@ -1,6 +1,11 @@
-const TeamRequest = require("../models/TeamRequest");
-
 // @desc    Send team-up request
+// @route   POST /api/requests
+const TeamRequest = require("../models/TeamRequest");
+const User = require("../models/user");
+const sendEmail = require("../utils/sendEmail");
+const { v4: uuidv4 } = require("uuid");
+
+// @desc    Send team-up request (with email notification)
 // @route   POST /api/requests
 const sendRequest = async (req, res) => {
   try {
@@ -10,7 +15,6 @@ const sendRequest = async (req, res) => {
       return res.status(400).json({ message: "Cannot request yourself" });
     }
 
-    // prevent duplicate requests
     const existing = await TeamRequest.findOne({
       fromUser,
       toUser,
@@ -18,21 +22,42 @@ const sendRequest = async (req, res) => {
     });
 
     if (existing) {
-      return res
-        .status(409)
-        .json({ message: "Request already sent" });
+      return res.status(409).json({ message: "Request already sent" });
     }
+
+    const token = uuidv4();
 
     const request = await TeamRequest.create({
       fromUser,
       toUser,
+      token,
     });
 
-    res.status(201).json(request);
+    const sender = await User.findById(fromUser);
+    const receiver = await User.findById(toUser);
+
+    const link = `${process.env.FRONTEND_URL}/request/${token}`;
+
+    await sendEmail({
+      to: receiver.email,
+      subject: "Someone wants to team up with you 🚀",
+      html: `
+        <p>Hi ${receiver.name},</p>
+        <p><strong>${sender.name}</strong> wants to collaborate with you.</p>
+        <p>
+          👉 <a href="${link}">View request</a>
+        </p>
+        <p>This link is secure and private.</p>
+      `,
+    });
+
+    res.status(201).json({ message: "Request sent & email delivered" });
   } catch (error) {
+    console.error("Request error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // @desc    Get incoming requests for a user
 // @route   GET /api/requests/incoming/:userId

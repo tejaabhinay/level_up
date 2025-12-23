@@ -19,6 +19,12 @@ const teamRequestSchema = new mongoose.Schema(
       enum: ["pending", "accepted", "rejected"],
       default: "pending",
     },
+    token: {
+  type: String,
+  required: true,
+  unique: true,
+},
+
   },
   {
     timestamps: true,

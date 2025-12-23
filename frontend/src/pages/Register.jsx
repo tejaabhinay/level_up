@@ -303,6 +303,27 @@ return (
             Register
           </button>
         </form>
+        <p
+  style={{
+    marginTop: "20px",
+    fontSize: "14px",
+    opacity: 0.85,
+    textAlign: "center",
+  }}
+>
+  Already registered?{" "}
+  <span
+    onClick={() => navigate("/login")}
+    style={{
+      color: "#6366f1",
+      cursor: "pointer",
+      fontWeight: 500,
+    }}
+  >
+    Login here
+  </span>
+</p>
+
       </div>
     </div>
   </>

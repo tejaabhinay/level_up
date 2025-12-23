@@ -18,6 +18,7 @@ const getAvailabilityGreeting = (availability) => {
   }
 };
 
+
 function Matches() {
   const [sentRequests, setSentRequests] = useState([]);
   const [matches, setMatches] = useState([]);
@@ -39,7 +40,42 @@ console.log("USER FROM LOCALSTORAGE:", user);
     if (user?._id) fetchMatches();
   }, [user]);
 
-  if (!user) return <div style={containerStyle}>Please login.</div>;
+ if (!user) {
+  return (
+    <div
+      style={{
+        ...containerStyle,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        textAlign: "center",
+      }}
+    >
+      <h2 style={{ fontSize: "2rem", marginBottom: "12px" }}>
+        You need to log in 🔐
+      </h2>
+      <p style={{ opacity: 0.8, marginBottom: "20px" }}>
+        Already registered? Continue to your matches.
+      </p>
+      <button
+        onClick={() => window.location.href = "/login"}
+        style={{
+          padding: "12px 24px",
+          background: "#4f46e5",
+          color: "#fff",
+          border: "none",
+          borderRadius: "12px",
+          fontWeight: "700",
+          cursor: "pointer",
+        }}
+      >
+        Go to Login
+      </button>
+    </div>
+  );
+}
+
 
   return (
     <div style={containerStyle}>
@@ -47,21 +83,50 @@ console.log("USER FROM LOCALSTORAGE:", user);
       <div style={glowEffectStyle} />
 
       <div style={{ maxWidth: "1100px", margin: "0 auto", position: "relative", zIndex: 1 }}>
-        <header style={{ marginBottom: "50px" }}>
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-            <div style={statusBadge}>
-              <span style={pulseDot}></span> LIVE MATCHMAKING
-            </div>
-   <h1 style={titleStyle}>
-  {getAvailabilityGreeting(user?.availability)}
-</h1>
+<header
+  style={{
+    marginBottom: "50px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  }}
+>
+  <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+    <div style={statusBadge}>
+      <span style={pulseDot}></span> LIVE MATCHMAKING
+    </div>
 
-<p style={subtitleStyle}>
-  Matches curated for your {user?.availability || "collaboration"} goals.
-</p>
+    <h1 style={titleStyle}>
+      {getAvailabilityGreeting(user?.availability)}
+    </h1>
 
-          </motion.div>
-        </header>
+    <p style={subtitleStyle}>
+      Matches curated for your {user?.availability || "collaboration"} goals.
+    </p>
+  </motion.div>
+
+  {/* 🔐 LOGOUT BUTTON */}
+  <button
+    onClick={() => {
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    }}
+    style={{
+      background: "rgba(255,255,255,0.06)",
+      color: "#e5e7eb",
+      border: "1px solid rgba(255,255,255,0.1)",
+      padding: "8px 16px",
+      borderRadius: "10px",
+      fontSize: "13px",
+      fontWeight: "600",
+      cursor: "pointer",
+    }}
+  >
+    Logout
+  </button>
+</header>
+
 
         {loading ? (
           <div style={{ color: "#6366f1", fontWeight: "600" }}>Fetching data...</div>
