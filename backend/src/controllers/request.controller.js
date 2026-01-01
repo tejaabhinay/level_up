@@ -1,12 +1,9 @@
-// @desc    Send team-up request
-// @route   POST /api/requests
 const TeamRequest = require("../models/TeamRequest");
 const User = require("../models/user");
-const sendEmail = require("../utils/sendEmail");
 const { v4: uuidv4 } = require("uuid");
 const Conversation = require("../models/Conversation");
 
-// @desc    Send team-up request (with email notification)
+// @desc    Send team-up request (Modified to use Socket Notifications)
 // @route   POST /api/requests
 const sendRequest = async (req, res) => {
   try {
@@ -27,87 +24,62 @@ const sendRequest = async (req, res) => {
     }
 
     const token = uuidv4();
-
-    const request = await TeamRequest.create({
-      fromUser,
-      toUser,
-      token,
-    });
+    const request = await TeamRequest.create({ fromUser, toUser, token });
 
     const sender = await User.findById(fromUser);
     const receiver = await User.findById(toUser);
 
-    const link = `${process.env.FRONTEND_URL}/request/${token}`;
+    // Get Socket info from the app instance
+    const io = req.app.get("io");
+    const userSockets = req.app.get("userSockets");
+    const receiverSocketId = userSockets.get(toUser.toString());
 
-    await sendEmail({
-      to: receiver.email,
-      subject: "Someone wants to team up with you 🚀",
-      html: `
-        <p>Hi ${receiver.name},</p>
-        <p><strong>${sender.name}</strong> wants to collaborate with you.</p>
-        <p>
-          👉 <a href="${link}">View request</a>
-        </p>
-        <p>This link is secure and private.</p>
-      `,
-    });
+    const notificationData = {
+      title: "New Team Request! 🚀",
+      body: `${sender.name} wants to collaborate with you.`,
+      url: `/request/${token}`
+    };
 
-    res.status(201).json({ message: "Request sent & email delivered" });
+    // If user is online, emit notification immediately
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("new_notification", notificationData);
+    }
+
+    res.status(201).json({ message: "Request sent & notification pushed" });
   } catch (error) {
     console.error("Request error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-
-// @desc    Get incoming requests for a user
-// @route   GET /api/requests/incoming/:userId
 const getIncomingRequests = async (req, res) => {
   try {
     const requests = await TeamRequest.find({
       toUser: req.params.userId,
       status: "pending",
     }).populate("fromUser", "name skills portfolio");
-
     res.json(requests);
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
 };
 
-// @desc    Update request status
-// @route   PATCH /api/requests/:id
-// @desc    Update request status (accept / reject)
-// @route   PATCH /api/requests/:id
 const updateRequestStatus = async (req, res) => {
   try {
     const { status } = req.body;
-
     if (!["accepted", "rejected"].includes(status)) {
       return res.status(400).json({ message: "Invalid status" });
     }
-
     const request = await TeamRequest.findById(req.params.id);
-    if (!request) {
-      return res.status(404).json({ message: "Request not found" });
-    }
-
-    // prevent double handling
-    if (request.status !== "pending") {
-      return res
-        .status(400)
-        .json({ message: "Request already handled" });
+    if (!request || request.status !== "pending") {
+      return res.status(400).json({ message: "Request not found or already handled" });
     }
 
     request.status = status;
     await request.save();
 
-    // 🟢 CREATE CONVERSATION ONLY ON ACCEPT
     if (status === "accepted") {
-      const existingConversation = await Conversation.findOne({
-        request: request._id,
-      });
-
+      const existingConversation = await Conversation.findOne({ request: request._id });
       if (!existingConversation) {
         await Conversation.create({
           participants: [request.fromUser, request.toUser],
@@ -115,37 +87,22 @@ const updateRequestStatus = async (req, res) => {
         });
       }
     }
-
     res.json({ message: `Request ${status}` });
   } catch (error) {
-    console.error("Update request error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-// @desc    Get request by token (from email link)
-// @route   GET /api/requests/token/:token
 const getRequestByToken = async (req, res) => {
   try {
-    const { token } = req.params;
-
-    const request = await TeamRequest.findOne({ token })
+    const request = await TeamRequest.findOne({ token: req.params.token })
       .populate("fromUser", "name skills portfolio")
       .populate("toUser", "email name");
-
-    if (!request) {
+    if (!request || request.status !== "pending") {
       return res.status(404).json({ message: "Invalid or expired request" });
     }
-
-    if (request.status !== "pending") {
-      return res
-        .status(400)
-        .json({ message: "Request already handled" });
-    }
-
     res.json(request);
   } catch (error) {
-    console.error("Fetch request error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -154,6 +111,5 @@ module.exports = {
   sendRequest,
   getIncomingRequests,
   updateRequestStatus,
-  getRequestByToken, // 👈 ADD THIS
+  getRequestByToken,
 };
-

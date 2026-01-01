@@ -14,11 +14,21 @@ const io = new Server(server, {
   },
 });
 
-// expose io via app so controllers can emit events
+// Map to store userId -> socketId
+const userSockets = new Map();
+
+// expose io and userSockets via app so controllers can access them
 app.set("io", io);
+app.set("userSockets", userSockets);
 
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
+
+  // New event to associate the socket with a logged-in user
+  socket.on("identify", (userId) => {
+    userSockets.set(userId, socket.id);
+    console.log(`User ${userId} identified with socket ${socket.id}`);
+  });
 
   socket.on("joinConversation", (conversationId) => {
     socket.join(conversationId);
@@ -27,11 +37,17 @@ io.on("connection", (socket) => {
 
   socket.on("sendMessage", async (data) => {
     const { conversationId, message } = data;
-    // Emit to all users in the conversation
     socket.to(conversationId).emit("receiveMessage", message);
   });
 
   socket.on("disconnect", () => {
+    // Remove user from mapping on disconnect
+    for (let [userId, socketId] of userSockets.entries()) {
+      if (socketId === socket.id) {
+        userSockets.delete(userId);
+        break;
+      }
+    }
     console.log("User disconnected:", socket.id);
   });
 });
