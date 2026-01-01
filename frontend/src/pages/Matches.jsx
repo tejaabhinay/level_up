@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaGithub, FaLinkedin, FaCode, FaFire, FaTerminal, FaCommentDots } from "react-icons/fa";
 import { MdCheckCircle, MdChevronRight } from "react-icons/md";
 import api from "../api";
+import NotificationBell from "../components/NotificationBell";
+
 const getAvailabilityGreeting = (availability) => {
   switch (availability) {
     case "hackathon":
@@ -18,14 +20,12 @@ const getAvailabilityGreeting = (availability) => {
   }
 };
 
-
-function Matches() {
+function Matches({ socket }) {
   const [sentRequests, setSentRequests] = useState([]);
   const [matches, setMatches] = useState([]);
   const [conversationsByUser, setConversationsByUser] = useState({});
   const [loading, setLoading] = useState(true);
   const user = JSON.parse(localStorage.getItem("user"));
-// debug log removed for performance
 
   useEffect(() => {
     const fetchMatches = async () => {
@@ -41,7 +41,6 @@ function Matches() {
     if (user?._id) fetchMatches();
   }, [user]);
 
-  // fetch conversations for user to know which matches have chat
   useEffect(() => {
     const fetchConversations = async () => {
       if (!user?._id) return;
@@ -61,42 +60,20 @@ function Matches() {
     fetchConversations();
   }, [user]);
 
- if (!user) {
-  return (
-    <div
-      style={{
-        ...containerStyle,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        textAlign: "center",
-      }}
-    >
-      <h2 style={{ fontSize: "2rem", marginBottom: "12px" }}>
-        You need to log in 🔐
-      </h2>
-      <p style={{ opacity: 0.8, marginBottom: "20px" }}>
-        Already registered? Continue to your matches.
-      </p>
-      <button
-        onClick={() => window.location.href = "/login"}
-        style={{
-          padding: "12px 24px",
-          background: "#4f46e5",
-          color: "#fff",
-          border: "none",
-          borderRadius: "12px",
-          fontWeight: "700",
-          cursor: "pointer",
-        }}
-      >
-        Go to Login
-      </button>
-    </div>
-  );
-}
-
+  if (!user) {
+    return (
+      <div style={{ ...containerStyle, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
+        <h2 style={{ fontSize: "2rem", marginBottom: "12px" }}>You need to log in 🔐</h2>
+        <p style={{ opacity: 0.8, marginBottom: "20px" }}>Already registered? Continue to your matches.</p>
+        <button
+          onClick={() => window.location.href = "/login"}
+          style={{ padding: "12px 24px", background: "#4f46e5", color: "#fff", border: "none", borderRadius: "12px", fontWeight: "700", cursor: "pointer" }}
+        >
+          Go to Login
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div style={containerStyle}>
@@ -111,51 +88,32 @@ function Matches() {
               <div style={{ fontSize: 13, color: "#9ca3af" }}>{user?.availability || "Looking for collaborators"}</div>
             </div>
           </div>
+
+          {/* IN-APP NOTIFICATION BELL AND LOGOUT */}
+          <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
+            <NotificationBell socket={socket} />
+            <button
+              onClick={() => {
+                localStorage.removeItem("user");
+                localStorage.removeItem("token");
+                window.location.href = "/login";
+              }}
+              style={logoutButtonStyle}
+            >
+              Logout
+            </button>
+          </div>
         </div>
-<header
-  style={{
-    marginBottom: "50px",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-  }}
->
-  <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-    <div style={statusBadge}>
-      <span style={pulseDot}></span> IDEA · CODE · PARTICIPATE
-    </div>
 
-    <h1 style={titleStyle}>
-      {getAvailabilityGreeting(user?.availability)}
-    </h1>
-
-    <p style={subtitleStyle}>
-      Matches curated for your {user?.availability || "collaboration"} goals.
-    </p>
-  </motion.div>
-
-  {/* 🔐 LOGOUT BUTTON */}
-  <button
-    onClick={() => {
-      localStorage.removeItem("user");
-      localStorage.removeItem("token");
-      window.location.href = "/login";
-    }}
-    style={{
-      background: "rgba(255,255,255,0.06)",
-      color: "#e5e7eb",
-      border: "1px solid rgba(255,255,255,0.1)",
-      padding: "8px 16px",
-      borderRadius: "10px",
-      fontSize: "13px",
-      fontWeight: "600",
-      cursor: "pointer",
-    }}
-  >
-    Logout
-  </button>
-</header>
-
+        <header style={{ marginBottom: "50px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+            <div style={statusBadge}>
+              <span style={pulseDot}></span> IDEA · CODE · PARTICIPATE
+            </div>
+            <h1 style={titleStyle}>{getAvailabilityGreeting(user?.availability)}</h1>
+            <p style={subtitleStyle}>Matches curated for your {user?.availability || "collaboration"} goals.</p>
+          </motion.div>
+        </header>
 
         {loading ? (
           <div style={{ color: "#9ca3af", fontWeight: "600" }}>Fetching data...</div>
@@ -182,7 +140,6 @@ function Matches() {
                     <div style={{ fontSize: 12, color: "#94a3b8" }}>{m.portfolio?.github ? "Open to collaboration" : "Available"}</div>
                   </div>
 
-                  {/* Skills Section - High Contrast */}
                   <div style={skillBox}>
                     <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "12px", color: "#64748b", fontSize: "11px", fontWeight: "700", letterSpacing: "1px" }}>
                       <FaTerminal /> CORE STACK
@@ -229,218 +186,34 @@ function Matches() {
 }
 
 /** MODERN UI STYLES **/
-
-const containerStyle = {
-  minHeight: "100vh",
-  padding: "80px 40px",
-  backgroundColor: "#0b0d0f",
-  backgroundImage: "radial-gradient(at 0% 0%, rgba(255,255,255,0.02) 0, transparent 30%)",
-  color: "#eef2f6",
-  fontFamily: "'Inter', system-ui, sans-serif"
-};
-
-const topGradient = {
-  position: "fixed",
-  left: 0,
-  right: 0,
-  height: 200,
-  background: "linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))",
-  filter: "blur(40px)",
-  pointerEvents: "none",
-  zIndex: 0,
-};
-
-const headerCard = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  background: "linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01))",
-  padding: "14px 20px",
-  borderRadius: 14,
-  marginBottom: 22,
-  border: "1px solid rgba(255,255,255,0.04)",
-};
-
-const profilePill = {
-  width: 48,
-  height: 48,
-  borderRadius: 12,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  background: "linear-gradient(135deg,#157a43,#34d399)",
-  color: "#061117",
-  fontWeight: 800,
-};
-
-const primaryAction = {
-  display: "none",
-};
-
-const avatarCircle = {
-  width: 50,
-  height: 50,
-  borderRadius: 12,
-  background: "#1f2933",
-  color: "#e6edf3",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontWeight: 800,
-};
-
-const cardHeaderAlt = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: 8,
-};
-
-const chatButton = {
-  padding: "8px 14px",
-  background: "linear-gradient(90deg,#86efac,#34d399)",
-  color: "#042014",
-  border: "none",
-  borderRadius: 10,
-  fontWeight: 700,
-  cursor: "pointer",
-  display: "flex",
-  alignItems: "center",
-};
-
-const statusBadge = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: "8px",
-  background: "rgba(34,197,94,0.06)",
-  padding: "6px 12px",
-  borderRadius: "20px",
-  fontSize: "10px",
-  fontWeight: "800",
-  letterSpacing: "1px",
-  color: "#065f46",
-  border: "1px solid rgba(34,197,94,0.12)",
-  marginBottom: "16px"
-};
-
-const pulseDot = {
-  height: "6px",
-  width: "6px",
-  backgroundColor: "#10b981",
-  borderRadius: "50%",
-  boxShadow: "0 0 8px rgba(16,185,129,0.9)"
-};
-
-const titleStyle = {
-  fontSize: "2.8rem",
-  fontWeight: "800",
-  marginBottom: "12px",
-  letterSpacing: "-1px"
-};
-
-const subtitleStyle = {
-  color: "#9ae6b4",
-  fontSize: "1.1rem",
-  maxWidth: "500px"
-};
-
-const gridStyle = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-  gap: "24px"
-};
-
-const cardStyle = {
-  background: "#0f172a",
-  border: "1px solid rgba(255, 255, 255, 0.05)",
-  borderRadius: "20px",
-  padding: "24px",
-  display: "flex",
-  flexDirection: "column",
-  justifyContent: "space-between",
-  transition: "border-color 0.3s ease"
-};
-
-const cardHeader = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "flex-start",
-  marginBottom: "24px"
-};
-
+const containerStyle = { minHeight: "100vh", padding: "80px 40px", backgroundColor: "#0b0d0f", backgroundImage: "radial-gradient(at 0% 0%, rgba(255,255,255,0.02) 0, transparent 30%)", color: "#eef2f6", fontFamily: "'Inter', system-ui, sans-serif" };
+const topGradient = { position: "fixed", left: 0, right: 0, height: 200, background: "linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))", filter: "blur(40px)", pointerEvents: "none", zIndex: 0 };
+const headerCard = { display: "flex", justifyContent: "space-between", alignItems: "center", background: "linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01))", padding: "14px 20px", borderRadius: 14, marginBottom: 22, border: "1px solid rgba(255,255,255,0.04)" };
+const profilePill = { width: 48, height: 48, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg,#157a43,#34d399)", color: "#061117", fontWeight: 800 };
+const avatarCircle = { width: 50, height: 50, borderRadius: 12, background: "#1f2933", color: "#e6edf3", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 };
+const cardHeaderAlt = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 };
+const chatButton = { padding: "8px 14px", background: "linear-gradient(90deg,#86efac,#34d399)", color: "#042014", border: "none", borderRadius: 10, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center" };
+const statusBadge = { display: "inline-flex", alignItems: "center", gap: "8px", background: "rgba(34,197,94,0.06)", padding: "6px 12px", borderRadius: "20px", fontSize: "10px", fontWeight: "800", letterSpacing: "1px", color: "#065f46", border: "1px solid rgba(34,197,94,0.12)", marginBottom: "16px" };
+const pulseDot = { height: "6px", width: "6px", backgroundColor: "#10b981", borderRadius: "50%", boxShadow: "0 0 8px rgba(16,185,129,0.9)" };
+const titleStyle = { fontSize: "2.8rem", fontWeight: "800", marginBottom: "12px", letterSpacing: "-1px" };
+const subtitleStyle = { color: "#9ae6b4", fontSize: "1.1rem", maxWidth: "500px" };
+const gridStyle = { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" };
+const cardStyle = { background: "#0f172a", border: "1px solid rgba(255, 255, 255, 0.05)", borderRadius: "20px", padding: "24px", display: "flex", flexDirection: "column", justifyContent: "space-between", transition: "border-color 0.3s ease" };
 const nameStyle = { fontSize: "1.25rem", fontWeight: "700", color: "#fff" };
-
-const matchScore = {
-  fontSize: "12px",
-  color: "#86efac",
-  fontWeight: "600",
-  marginTop: "4px",
-  display: "flex",
-  alignItems: "center",
-  gap: "4px"
-};
-
-const skillBox = {
-  background: "rgba(34,197,94,0.02)",
-  padding: "16px",
-  borderRadius: "12px",
-  marginBottom: "24px"
-};
-
+const matchScore = { fontSize: "12px", color: "#86efac", fontWeight: "600", marginTop: "4px", display: "flex", alignItems: "center", gap: "4px" };
+const skillBox = { background: "rgba(34,197,94,0.02)", padding: "16px", borderRadius: "12px", marginBottom: "24px" };
 const skillContainerStyle = { display: "flex", flexWrap: "wrap", gap: "6px" };
-
-const pillStyle = {
-  background: "rgba(34,197,94,0.04)",
-  border: "1px solid rgba(34,197,94,0.06)",
-  padding: "4px 10px",
-  borderRadius: "6px",
-  fontSize: "11px",
-  fontWeight: "600",
-  color: "#cbd5e1"
-};
-
+const pillStyle = { background: "rgba(34,197,94,0.04)", border: "1px solid rgba(34,197,94,0.06)", padding: "4px 10px", borderRadius: "6px", fontSize: "11px", fontWeight: "600", color: "#cbd5e1" };
 const footerStyle = { display: "flex", justifyContent: "space-between", alignItems: "center" };
-
-const actionButtonStyle = {
-  padding: "8px 18px",
-  background: "#e6edf3",
-  color: "#0b1220",
-  border: "none",
-  borderRadius: "10px",
-  fontWeight: "700",
-  fontSize: "13px",
-  cursor: "pointer",
-  display: "flex",
-  alignItems: "center",
-  transition: "0.12s",
-};
-
-const sentButtonStyle = {
-  padding: "8px 18px",
-  background: "rgba(34,197,94,0.08)",
-  color: "#065f46",
-  border: "1px solid rgba(34,197,94,0.12)",
-  borderRadius: "10px",
-  fontSize: "16px",
-  cursor: "default"
-};
-
+const actionButtonStyle = { padding: "8px 18px", background: "#e6edf3", color: "#0b1220", border: "none", borderRadius: "10px", fontWeight: "700", fontSize: "13px", cursor: "pointer", display: "flex", alignItems: "center", transition: "0.12s" };
+const sentButtonStyle = { padding: "8px 18px", background: "rgba(34,197,94,0.08)", color: "#065f46", border: "1px solid rgba(34,197,94,0.12)", borderRadius: "10px", fontSize: "16px", cursor: "default" };
 const socialGroupStyle = { display: "flex", gap: "12px" };
+const logoutButtonStyle = { background: "rgba(255,255,255,0.06)", color: "#e5e7eb", border: "1px solid rgba(255,255,255,0.1)", padding: "8px 16px", borderRadius: "10px", fontSize: "13px", fontWeight: "600", cursor: "pointer" };
 
 const SocialIcon = ({ icon, url, color = "#475569" }) => (
   <a href={url} target="_blank" rel="noreferrer" style={{ color, fontSize: "1.1rem" }}>
     {icon}
   </a>
 );
-
-const glowEffectStyle = {
-  position: "fixed",
-  top: 0,
-  left: 0,
-  right: 0,
-  height: "300px",
-  background: "radial-gradient(circle at 50% -20%, rgba(16,185,129,0.08), transparent 70%)",
-  pointerEvents: "none"
-};
 
 export default Matches;

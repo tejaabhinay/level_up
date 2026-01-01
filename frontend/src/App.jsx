@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import io from "socket.io-client";
 
 // Lazy load pages
@@ -11,41 +11,20 @@ const RequestPage = lazy(() => import("./pages/RequestPage"));
 const Chat = lazy(() => import("./pages/Chat"));
 
 function App() {
+  const [socket, setSocket] = useState(null);
+
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user?._id) return;
 
-    // 1. Request Permission for Browser Notifications
-    if (Notification.permission === "default") {
-      Notification.requestPermission();
-    }
-
-    // 2. Setup Socket Connection
-    const socket = io("http://localhost:5000"); // Use your Render backend URL here
+    // 1. Setup Socket Connection
+    const newSocket = io("http://localhost:5000");
+    setSocket(newSocket);
 
     // Tell the server who we are so it knows where to send notifications
-    socket.emit("identify", user._id);
+    newSocket.emit("identify", user._id);
 
-    // 3. Listen for global notifications
-    socket.on("new_notification", (data) => {
-      if (Notification.permission === "granted") {
-        const notif = new Notification(data.title, {
-          body: data.body,
-          icon: "/vite.svg", // Path to your logo
-        });
-
-        // Redirect user to the request page when they click the notification
-        notif.onclick = () => {
-          window.focus();
-          window.location.href = data.url;
-        };
-      } else {
-        // Fallback if browser notifications are blocked
-        alert(`${data.title}: ${data.body}`);
-      }
-    });
-
-    return () => socket.disconnect();
+    return () => newSocket.disconnect();
   }, []);
 
   return (
@@ -55,7 +34,8 @@ function App() {
           <Route path="/" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/intro" element={<MatchIntro />} />
-          <Route path="/matches" element={<Matches />} />
+          {/* Pass the socket instance to Matches page */}
+          <Route path="/matches" element={<Matches socket={socket} />} />
           <Route path="/chat/:conversationId" element={<Chat />} />
           <Route path="/request/:token" element={<RequestPage />} />
         </Routes>
