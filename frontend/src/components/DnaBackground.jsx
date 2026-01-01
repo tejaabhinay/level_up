@@ -29,7 +29,7 @@ function DnaBackground() {
    =============================== */
 
 function DNAHelix({ centerX, hue, tilt, opacity }) {
-  const nucleotides = ["A", "T", "G", "C"];
+  const levelUpChars = Array.from("LEVEL UP");
   const amplitude = 140;
   const spacing = 40;
   const steps = 260;
@@ -45,7 +45,7 @@ function DNAHelix({ centerX, hue, tilt, opacity }) {
       depth,
       r: 4 + depth * 5,
       opacity: (0.3 + depth * 0.7) * opacity,
-      base: nucleotides[i % 4],
+      base: levelUpChars[i % levelUpChars.length],
     };
   });
 
