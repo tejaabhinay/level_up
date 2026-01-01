@@ -272,20 +272,41 @@ return (
 
 
           <div style={{ marginTop: "10px" }}>
-            <h4>Looking for</h4>
-            <input
-              placeholder="e.g. backend"
-              value={lookingFor}
-              onChange={(e) => setLookingFor(e.target.value)}
+            <h4 style={{ color: "#c7d2fe", marginBottom: "8px" }}>Looking for</h4>
+            <div
               style={{
-                width: "100%",
-                padding: "8px",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
+                background: "rgba(255,255,255,0.10)",
+                borderRadius: "12px",
+                boxShadow: "0 4px 24px 0 rgba(0,0,0,0.15)",
+                backdropFilter: "blur(8px)",
+                padding: "6px 14px",
+                border: "1.5px solid rgba(255,255,255,0.18)",
+                display: "flex",
+                alignItems: "center",
               }}
-            />
+            >
+              <span style={{ marginRight: "8px", color: "#818cf8", fontSize: "1.2em" }}>
+                <svg width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.5 2.75a5.75 5.75 0 1 1 0 11.5 5.75 5.75 0 0 1 0-11.5Zm0 1.5a4.25 4.25 0 1 0 0 8.5 4.25 4.25 0 0 0 0-8.5Zm7.03 11.22a.75.75 0 0 1 1.06 1.06l-2.25 2.25a.75.75 0 0 1-1.06-1.06l2.25-2.25Z" fill="currentColor"/></svg>
+              </span>
+              <input
+                placeholder="e.g. backend"
+                value={lookingFor}
+                onChange={(e) => setLookingFor(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "10px 12px",
+                  borderRadius: "8px",
+                  border: "none",
+                  background: "rgba(30,41,59,0.7)",
+                  color: "#e5e7eb",
+                  fontSize: "1rem",
+                  outline: "none",
+                  boxShadow: "0 2px 8px 0 rgba(0,0,0,0.10)",
+                  transition: "background 0.2s, color 0.2s",
+                }}
+              />
+            </div>
           </div>
-
 
           <button
             type="submit"
