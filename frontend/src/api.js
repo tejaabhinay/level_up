@@ -1,11 +1,11 @@
 import axios from "axios";
 
+// This looks for VITE_API_URL from Render/env, or falls back to localhost for your own testing
 const api = axios.create({
-  baseURL: "http://localhost:5000/api",
-  timeout: 10000, // 10 second timeout
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+  timeout: 10000, 
 });
 
-// Add response interceptor for better error handling
 api.interceptors.response.use(
   (response) => response,
   (error) => {
