@@ -9,39 +9,43 @@ connectDB();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
+    // Dynamically handle the origin from env or fallback to local dev
     origin: process.env.FRONTEND_URL || "http://localhost:5173",
     methods: ["GET", "POST"],
   },
 });
 
-// Map to store userId -> socketId
+// Map to store userId -> socketId for private notifications
 const userSockets = new Map();
 
-// expose io and userSockets via app so controllers can access them
+// Expose io and userSockets via app so controllers can access them for global notifications
 app.set("io", io);
 app.set("userSockets", userSockets);
 
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
-  // New event to associate the socket with a logged-in user
+  // Associate the socket with a specific logged-in user for notifications
   socket.on("identify", (userId) => {
     userSockets.set(userId, socket.id);
     console.log(`User ${userId} identified with socket ${socket.id}`);
   });
 
+  // Join a specific conversation room for real-time chat sync
   socket.on("joinConversation", (conversationId) => {
     socket.join(conversationId);
-    console.log(`User joined conversation: ${conversationId}`);
+    console.log(`User joined conversation room: ${conversationId}`);
   });
 
-  socket.on("sendMessage", async (data) => {
+  // Handle sending messages real-time within a room
+  socket.on("sendMessage", (data) => {
     const { conversationId, message } = data;
+    // Broadcast message to everyone in the room EXCEPT the sender
     socket.to(conversationId).emit("receiveMessage", message);
   });
 
   socket.on("disconnect", () => {
-    // Remove user from mapping on disconnect
+    // Clean up mapping on disconnect
     for (let [userId, socketId] of userSockets.entries()) {
       if (socketId === socket.id) {
         userSockets.delete(userId);
